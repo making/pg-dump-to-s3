@@ -10,8 +10,8 @@ RUN ./mvnw -V clean package -DskipTests --no-transfer-progress && \
 
 FROM eclipse-temurin:17-jre
 WORKDIR application
-RUN apt-get update && \
-  apt-get install -y postgresql-client && \
+RUN apt-get update -qq && \
+  apt-get install -y -qq postgresql-client && \
   rm -rf /var/lib/apt/lists/*
 COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
