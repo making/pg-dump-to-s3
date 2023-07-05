@@ -16,6 +16,7 @@
 	<description>pg-dump-to-s3</description>
 	<properties>
 		<java.version>17</java.version>
+		<snakeyaml.version>2.0</snakeyaml.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -34,7 +35,7 @@
 		<dependency>
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
-			<version>8.5.2</version>
+			<version>8.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
