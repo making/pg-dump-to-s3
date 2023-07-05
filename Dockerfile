@@ -4,7 +4,7 @@ ADD ./.mvn .mvn/
 ADD ./mvnw mvnw
 ADD ./pom.xml pom.xml
 ADD ./src src/
-RUN ./mvnw clean package -DskipTests && \
+RUN ./mvnw -V clean package -DskipTests --no-transfer-progress && \
     cp target/*.jar application.jar && \
     java -Djarmode=layertools -jar application.jar extract
 
