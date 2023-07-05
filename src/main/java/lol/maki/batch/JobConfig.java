@@ -31,12 +31,13 @@ public class JobConfig {
 	}
 
 	@Bean
-	public Job backupJob(JobRepository jobRepository, Step dumpStep, Step uploadStep, ObservationRegistry observationRegistry) {
+	public Job backupJob(JobRepository jobRepository, Step dumpStep, Step uploadStep, JobExceptionListener jobExceptionListener, ObservationRegistry observationRegistry) {
 		return new JobBuilder("BackupJob", jobRepository)
 				.incrementer(new RunIdIncrementer())
 				.start(dumpStep)
 				.next(uploadStep)
 				.observationRegistry(observationRegistry)
+				.listener(jobExceptionListener)
 				.build();
 	}
 }
