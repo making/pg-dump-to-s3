@@ -51,10 +51,14 @@ public class DumpTasklet implements Tasklet {
 		environment.put("PGPASSWORD", this.pgDumpProps.password());
 		logger.info("command=\"{}\"", String.join(" ", processBuilder.command()));
 		final Process process = processBuilder.start();
-		final boolean finished = process.waitFor(10, TimeUnit.SECONDS);
+		final boolean finished = process.waitFor(30, TimeUnit.SECONDS);
 		if (finished) {
 			context.put("dump", dump.toAbsolutePath().toString());
-			logger.info("Exit code = {}", process.exitValue());
+			int exitValue = process.exitValue();
+			logger.info("Exit code = {}", exitValue);
+			if (exitValue != 0) {
+				throw new IllegalStateException("pg_dump finished unsuccessfully!");
+			}
 		}
 		else {
 			process.destroy();
