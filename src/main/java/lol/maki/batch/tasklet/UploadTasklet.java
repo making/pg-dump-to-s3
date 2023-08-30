@@ -76,7 +76,7 @@ public class UploadTasklet implements Tasklet {
 						.build());
 			}
 		}
-		final String objectName = today + "/" + this.pgDumpProps.database() + ".sql";
+		final String objectName = "%s/%s-%s.sql".formatted(today, this.s3Props.filePrefix(), this.pgDumpProps.database());
 		logger.info("Uploading {} to {} ...", path.toAbsolutePath(), objectName);
 		this.minioClient.uploadObject(UploadObjectArgs.builder()
 				.bucket(this.s3Props.bucket())
