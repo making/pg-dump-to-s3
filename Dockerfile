@@ -11,7 +11,12 @@ RUN ./mvnw -V clean package -DskipTests --no-transfer-progress && \
 FROM eclipse-temurin:17-jre
 WORKDIR application
 RUN apt-get update -qq && \
-  apt-get install -y -qq postgresql-client && \
+  apt-get install -y -qq gnupg && \
+  sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+  wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+  apt-get update -qq && \
+  apt-get install -y -qq postgresql-client-15 && \
+  apt-get remove --purge -y -qq gnupg && \
   rm -rf /var/lib/apt/lists/*
 COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
