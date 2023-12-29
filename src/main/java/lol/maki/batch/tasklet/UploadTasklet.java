@@ -30,6 +30,7 @@ import org.springframework.util.FileSystemUtils;
 @Component
 @JobScope
 public class UploadTasklet implements Tasklet {
+
 	private final Logger logger = LoggerFactory.getLogger(UploadTasklet.class);
 
 	private final MinioClient minioClient;
@@ -40,7 +41,6 @@ public class UploadTasklet implements Tasklet {
 
 	private final PgDumpProps pgDumpProps;
 
-
 	public UploadTasklet(MinioClient minioClient, Clock clock, S3Props s3Props, PgDumpProps pgDumpProps) {
 		this.minioClient = minioClient;
 		this.clock = clock;
@@ -50,40 +50,38 @@ public class UploadTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-		final Path path = Path.of(contribution.getStepExecution()
-				.getJobExecution()
-				.getExecutionContext()
-				.getString("dump"));
+		final Path path = Path
+			.of(contribution.getStepExecution().getJobExecution().getExecutionContext().getString("dump"));
 		final LocalDateTime dateTime = LocalDateTime.parse(path.getFileName().toString());
-		if (!this.minioClient.bucketExists(BucketExistsArgs.builder().bucket(this.s3Props.bucket()).build())) {
+		if (this.s3Props.checkBucket()
+				&& !this.minioClient.bucketExists(BucketExistsArgs.builder().bucket(this.s3Props.bucket()).build())) {
 			logger.info("Create bucket ({})", this.s3Props.bucket());
 			this.minioClient.makeBucket(MakeBucketArgs.builder().bucket(this.s3Props.bucket()).build());
 		}
 		final LocalDate today = dateTime.toLocalDate();
-		final Iterable<Result<Item>> objects = this.minioClient.listObjects(ListObjectsArgs.builder()
-				.bucket(this.s3Props.bucket())
-				.recursive(true)
-				.build());
+		final Iterable<Result<Item>> objects = this.minioClient
+			.listObjects(ListObjectsArgs.builder().bucket(this.s3Props.bucket()).recursive(true).build());
 		for (Result<Item> object : objects) {
 			final String objectName = object.get().objectName();
 			final File objectFile = new File(objectName);
-			final LocalDate backupDate = LocalDate.parse(objectName.endsWith("/") ? objectFile.getName() : objectFile.getParent());
+			final LocalDate backupDate = LocalDate
+				.parse(objectName.endsWith("/") ? objectFile.getName() : objectFile.getParent());
 			if (backupDate.isBefore(today.minusDays(this.s3Props.retention().toDays()))) {
 				logger.info("Deleting {} ...", objectName);
-				this.minioClient.removeObject(RemoveObjectArgs.builder()
-						.bucket(this.s3Props.bucket())
-						.object(objectName)
-						.build());
+				this.minioClient
+					.removeObject(RemoveObjectArgs.builder().bucket(this.s3Props.bucket()).object(objectName).build());
 			}
 		}
-		final String objectName = "%s/%s-%s.sql".formatted(today, this.s3Props.filePrefix(), this.pgDumpProps.database());
+		final String objectName = "%s/%s-%s.sql".formatted(today, this.s3Props.filePrefix(),
+				this.pgDumpProps.database());
 		logger.info("Uploading {} to {} ...", path.toAbsolutePath(), objectName);
 		this.minioClient.uploadObject(UploadObjectArgs.builder()
-				.bucket(this.s3Props.bucket())
-				.object(objectName)
-				.filename(path.toAbsolutePath().toString())
-				.build());
+			.bucket(this.s3Props.bucket())
+			.object(objectName)
+			.filename(path.toAbsolutePath().toString())
+			.build());
 		FileSystemUtils.deleteRecursively(path.toFile());
 		return RepeatStatus.FINISHED;
 	}
+
 }
