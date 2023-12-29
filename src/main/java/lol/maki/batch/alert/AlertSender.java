@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import am.ik.spring.http.client.RetryableClientHttpRequestInterceptor;
 import lol.maki.batch.alert.AlertProps.Slack;
@@ -81,9 +82,9 @@ public class AlertSender {
 					.getTemplate()
 					.replace("${RESULT}", alertType.name())
 					.replace("${KIND}", kind)
-					.replace("${NAMESPACE}", namespace)
+					.replace("${NAMESPACE}", Objects.requireNonNullElse(namespace, "-"))
 					.replace("${NAME}", name)
-					.replace("${CLUSTER}", this.props.getCluster())
+					.replace("${CLUSTER}", Objects.requireNonNullElse(this.props.getCluster(), "-"))
 					.replace("${TEXT}", alertType.textTemplate().formatted(kind))
 					.replace("\"null\"", "null");
 		};
