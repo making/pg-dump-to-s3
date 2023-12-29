@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DumpTasklet implements Tasklet {
+
 	private final Logger logger = LoggerFactory.getLogger(DumpTasklet.class);
 
 	private final Clock clock;
@@ -36,17 +37,12 @@ public class DumpTasklet implements Tasklet {
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		final ExecutionContext context = contribution.getStepExecution().getJobExecution().getExecutionContext();
 		final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-		final String timestamp = LocalDateTime.now(this.clock)
-				.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		final String timestamp = LocalDateTime.now(this.clock).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		final Path dump = tmpDir.resolve("%s".formatted(timestamp));
-		final ProcessBuilder processBuilder = new ProcessBuilder(
-				"pg_dump",
-				"-U", this.pgDumpProps.username(),
-				"-h", this.pgDumpProps.host(),
-				"-p", String.valueOf(this.pgDumpProps.port()),
-				this.pgDumpProps.database())
-				.directory(tmpDir.toFile())
-				.redirectOutput(dump.toFile());
+		final ProcessBuilder processBuilder = new ProcessBuilder("pg_dump", "-U", this.pgDumpProps.username(), "-h",
+				this.pgDumpProps.host(), "-p", String.valueOf(this.pgDumpProps.port()), this.pgDumpProps.database())
+			.directory(tmpDir.toFile())
+			.redirectOutput(dump.toFile());
 		final Map<String, String> environment = processBuilder.environment();
 		environment.put("PGPASSWORD", this.pgDumpProps.password());
 		logger.info("command=\"{}\"", String.join(" ", processBuilder.command()));
@@ -66,4 +62,5 @@ public class DumpTasklet implements Tasklet {
 		}
 		return RepeatStatus.FINISHED;
 	}
+
 }

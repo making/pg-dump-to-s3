@@ -32,4 +32,5 @@ public class JobExceptionListener implements JobExecutionListener {
 		final String messages = exceptions.stream().map(e -> "* " + e.getMessage()).collect(Collectors.joining("\n"));
 		this.alertSender.sendAlert(AlertType.FAILURE, "Job", null, this.applicationName, messages);
 	}
+
 }

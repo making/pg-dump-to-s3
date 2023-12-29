@@ -14,31 +14,32 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 public class AppConfig {
+
 	@Bean
 	public OkHttpClient okHttpClient(ObservationRegistry observationRegistry) {
 		final HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
 		httpLoggingInterceptor.setLevel(Level.BASIC);
 		return new OkHttpClient.Builder()
-				.addInterceptor(OkHttpObservationInterceptor
-						.builder(observationRegistry, "okhttp.requests")
-						.uriMapper(request -> "/" + String.join("/", request.url().pathSegments()))
-						.build())
-				.addInterceptor(httpLoggingInterceptor)
-				.build();
+			.addInterceptor(OkHttpObservationInterceptor.builder(observationRegistry, "okhttp.requests")
+				.uriMapper(request -> "/" + String.join("/", request.url().pathSegments()))
+				.build())
+			.addInterceptor(httpLoggingInterceptor)
+			.build();
 	}
 
 	@Bean
 	public MinioClient minioClient(AwsProps awsProps, S3Props s3Props, OkHttpClient okHttpClient) {
 		return MinioClient.builder()
-				.endpoint(s3Props.hostname())
-				.credentials(awsProps.accessKeyId(), awsProps.secretAccessKey())
-				.region(awsProps.region())
-				.httpClient(okHttpClient)
-				.build();
+			.endpoint(s3Props.hostname())
+			.credentials(awsProps.accessKeyId(), awsProps.secretAccessKey())
+			.region(awsProps.region())
+			.httpClient(okHttpClient)
+			.build();
 	}
 
 	@Bean
 	public Clock clock() {
 		return Clock.systemUTC();
 	}
+
 }

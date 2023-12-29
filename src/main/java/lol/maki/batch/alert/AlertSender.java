@@ -31,11 +31,10 @@ public class AlertSender {
 	private final Logger logger = LoggerFactory.getLogger(AlertSender.class);
 
 	public AlertSender(RestTemplateBuilder restTemplateBuilder, AlertProps props) {
-		this.restTemplate = restTemplateBuilder
-				.setReadTimeout(Duration.ofSeconds(30))
-				.setConnectTimeout(Duration.ofSeconds(30))
-				.interceptors(new RetryableClientHttpRequestInterceptor(new ExponentialBackOff()))
-				.build();
+		this.restTemplate = restTemplateBuilder.setReadTimeout(Duration.ofSeconds(30))
+			.setConnectTimeout(Duration.ofSeconds(30))
+			.interceptors(new RetryableClientHttpRequestInterceptor(new ExponentialBackOff()))
+			.build();
 		this.props = props;
 	}
 
@@ -44,8 +43,8 @@ public class AlertSender {
 			alertType.log(logger);
 			final Object payload = buildPayload(alertType, kind, namespace, name, message);
 			final RequestEntity<?> request = RequestEntity.post(this.props.getWebhookUrl())
-					.contentType(MediaType.APPLICATION_JSON)
-					.body(payload);
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(payload);
 			final ResponseEntity<String> response = this.restTemplate.exchange(request, String.class);
 			logger.debug("Response: {}", response);
 		}
@@ -79,14 +78,14 @@ public class AlertSender {
 				yield payload;
 			}
 			case GENERIC -> this.props.getGeneric()
-					.getTemplate()
-					.replace("${RESULT}", alertType.name())
-					.replace("${KIND}", kind)
-					.replace("${NAMESPACE}", Objects.requireNonNullElse(namespace, "-"))
-					.replace("${NAME}", name)
-					.replace("${CLUSTER}", Objects.requireNonNullElse(this.props.getCluster(), "-"))
-					.replace("${TEXT}", alertType.textTemplate().formatted(kind))
-					.replace("\"null\"", "null");
+				.getTemplate()
+				.replace("${RESULT}", alertType.name())
+				.replace("${KIND}", kind)
+				.replace("${NAMESPACE}", Objects.requireNonNullElse(namespace, "-"))
+				.replace("${NAME}", name)
+				.replace("${CLUSTER}", Objects.requireNonNullElse(this.props.getCluster(), "-"))
+				.replace("${TEXT}", alertType.textTemplate().formatted(kind))
+				.replace("\"null\"", "null");
 		};
 	}
 

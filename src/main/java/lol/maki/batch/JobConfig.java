@@ -16,28 +16,28 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class JobConfig {
+
 	@Bean
-	public Step dumpStep(JobRepository jobRepository, DumpTasklet dumpTasklet, PlatformTransactionManager transactionManager) {
-		return new StepBuilder("Dump", jobRepository)
-				.tasklet(dumpTasklet, transactionManager)
-				.build();
+	public Step dumpStep(JobRepository jobRepository, DumpTasklet dumpTasklet,
+			PlatformTransactionManager transactionManager) {
+		return new StepBuilder("Dump", jobRepository).tasklet(dumpTasklet, transactionManager).build();
 	}
 
 	@Bean
-	public Step uploadStep(JobRepository jobRepository, UploadTasklet uploadTasklet, PlatformTransactionManager transactionManager) {
-		return new StepBuilder("Upload", jobRepository)
-				.tasklet(uploadTasklet, transactionManager)
-				.build();
+	public Step uploadStep(JobRepository jobRepository, UploadTasklet uploadTasklet,
+			PlatformTransactionManager transactionManager) {
+		return new StepBuilder("Upload", jobRepository).tasklet(uploadTasklet, transactionManager).build();
 	}
 
 	@Bean
-	public Job backupJob(JobRepository jobRepository, Step dumpStep, Step uploadStep, JobExceptionListener jobExceptionListener, ObservationRegistry observationRegistry) {
-		return new JobBuilder("BackupJob", jobRepository)
-				.incrementer(new RunIdIncrementer())
-				.start(dumpStep)
-				.next(uploadStep)
-				.observationRegistry(observationRegistry)
-				.listener(jobExceptionListener)
-				.build();
+	public Job backupJob(JobRepository jobRepository, Step dumpStep, Step uploadStep,
+			JobExceptionListener jobExceptionListener, ObservationRegistry observationRegistry) {
+		return new JobBuilder("BackupJob", jobRepository).incrementer(new RunIdIncrementer())
+			.start(dumpStep)
+			.next(uploadStep)
+			.observationRegistry(observationRegistry)
+			.listener(jobExceptionListener)
+			.build();
 	}
+
 }
