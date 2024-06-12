@@ -61,4 +61,4 @@ jobs:
       if: github.ref == 'refs/heads/main'
       run: |
         set -e
-        docker push ghcr.io/${GITHUB_REPOSITORY}:jvm
+        docker push ghcr.io/${GITHUB_REPOSITORY}
