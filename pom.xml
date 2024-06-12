@@ -16,7 +16,6 @@
 	<description>pg-dump-to-s3</description>
 	<properties>
 		<java.version>17</java.version>
-		<snakeyaml.version>2.0</snakeyaml.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -37,13 +36,14 @@
 			<artifactId>spring-boot-starter-batch</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.minio</groupId>
-			<artifactId>minio</artifactId>
-			<version>8.5.7</version>
+			<groupId>am.ik.s3</groupId>
+			<artifactId>simple-s3-client</artifactId>
+			<version>0.2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.squareup.okhttp3</groupId>
-			<artifactId>logging-interceptor</artifactId>
+			<groupId>am.ik.spring.logbook</groupId>
+			<artifactId>access-logger-logbook</artifactId>
+			<version>0.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>am.ik.spring</groupId>
 			<artifactId>retryable-client-http-request-interceptor</artifactId>
-			<version>0.2.2</version>
+			<version>0.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>

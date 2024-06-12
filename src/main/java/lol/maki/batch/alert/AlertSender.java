@@ -11,6 +11,7 @@ import am.ik.spring.http.client.RetryableClientHttpRequestInterceptor;
 import lol.maki.batch.alert.AlertProps.Slack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.MediaType;
@@ -30,10 +31,12 @@ public class AlertSender {
 
 	private final Logger logger = LoggerFactory.getLogger(AlertSender.class);
 
-	public AlertSender(RestTemplateBuilder restTemplateBuilder, AlertProps props) {
+	public AlertSender(RestTemplateBuilder restTemplateBuilder,
+			LogbookClientHttpRequestInterceptor logbookClientHttpRequestInterceptor, AlertProps props) {
 		this.restTemplate = restTemplateBuilder.setReadTimeout(Duration.ofSeconds(30))
 			.setConnectTimeout(Duration.ofSeconds(30))
-			.interceptors(new RetryableClientHttpRequestInterceptor(new ExponentialBackOff()))
+			.interceptors(List.of(logbookClientHttpRequestInterceptor,
+					new RetryableClientHttpRequestInterceptor(new ExponentialBackOff())))
 			.build();
 		this.props = props;
 	}
