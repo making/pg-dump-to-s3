@@ -1,0 +1,64 @@
+name: CI
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - src/**
+    - ui/**
+    - pom.xml
+    - .github/workflows/*
+  pull_request:
+    branches:
+    - main
+    paths:
+    - src/**
+    - ui/**
+    - pom.xml
+    - .github/workflows/*
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install GraalVM
+      uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: '21'
+        distribution: 'graalvm'
+        cache: 'maven'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Executable Jar
+      run: |
+        set -e
+        ./mvnw -V --no-transfer-progress package -DskipTests
+    - name: Import Secrets
+      if: github.ref == 'refs/heads/main'
+      id: secrets
+      uses: hashicorp/vault-action@v3.0.0
+      with:
+        exportToken: true
+        exportEnv: true
+        method: jwt
+        url: ${{ secrets.VAULT_ADDR }}
+        role: cicd
+        secrets: |
+          kv/data/cicd/github api_token | GITHUB_API_TOKEN ;
+          kv/data/cicd/fly api_token | FLY_API_TOKEN
+    - name: Docker Login
+      if: github.ref == 'refs/heads/main'
+      run: docker login ghcr.io -u ${GITHUB_REPOSITORY_OWNER} -p ${GITHUB_API_TOKEN}
+    - name: Build Docker Image (JVM)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        set -e
+        docker build . -t ghcr.io/${GITHUB_REPOSITORY}
+    - name: Docker Push
+      if: github.ref == 'refs/heads/main'
+      run: |
+        set -e
+        docker push ghcr.io/${GITHUB_REPOSITORY}:jvm
