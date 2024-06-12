@@ -72,10 +72,10 @@ public class UploadTasklet implements Tasklet {
 			.of(contribution.getStepExecution().getJobExecution().getExecutionContext().getString("dump"));
 		final LocalDateTime dateTime = LocalDateTime.parse(path.getFileName().toString());
 		S3Request bucketExistsRequest = this.s3RequestSupplier.get()
-			.method(HttpMethod.GET)
+			.method(HttpMethod.HEAD)
 			.path(b -> b.bucket(this.s3Props.bucket()))
 			.build();
-		if (this.s3Props.checkBucket() && this.restClient.get()
+		if (this.s3Props.checkBucket() && this.restClient.head()
 			.uri(bucketExistsRequest.uri())
 			.headers(bucketExistsRequest.headers())
 			.retrieve()
