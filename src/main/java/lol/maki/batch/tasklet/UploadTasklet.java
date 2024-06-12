@@ -55,6 +55,11 @@ public class UploadTasklet implements Tasklet {
 		this.restClient = restClientBuilder.defaultStatusHandler(new DefaultResponseErrorHandler() {
 			@Override
 			protected void handleError(ClientHttpResponse response, HttpStatusCode statusCode) throws IOException {
+				if (statusCode == HttpStatus.NOT_FOUND) {
+					// Accept 404 errors
+					return;
+				}
+				super.handleError(response, statusCode);
 			}
 		}).build();
 		this.s3Props = s3Props;
