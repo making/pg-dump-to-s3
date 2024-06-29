@@ -56,9 +56,12 @@ jobs:
       if: github.ref == 'refs/heads/main'
       run: |
         set -e
-        docker build . -t ghcr.io/${GITHUB_REPOSITORY}
+        docker build . -t ghcr.io/${GITHUB_REPOSITORY}:16
+        sed -i.bak 's/postgresql-client-16/postgresql-client-15/' Dockerfile
+        docker build . -t ghcr.io/${GITHUB_REPOSITORY}:15
     - name: Docker Push
       if: github.ref == 'refs/heads/main'
       run: |
         set -e
-        docker push ghcr.io/${GITHUB_REPOSITORY}
+        docker push ghcr.io/${GITHUB_REPOSITORY}:16
+        docker push ghcr.io/${GITHUB_REPOSITORY}:15
