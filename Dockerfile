@@ -15,7 +15,7 @@ RUN apt-get update -qq && \
   sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
   wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
   apt-get update -qq && \
-  apt-get install -y -qq postgresql-client-15 && \
+  apt-get install -y -qq postgresql-client-16 && \
   apt-get remove --purge -y -qq gnupg && \
   rm -rf /var/lib/apt/lists/*
 COPY --from=builder application/dependencies/ ./
