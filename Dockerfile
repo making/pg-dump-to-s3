@@ -11,9 +11,10 @@ RUN ./mvnw -V clean package -DskipTests --no-transfer-progress && \
 FROM eclipse-temurin:17-jre
 WORKDIR application
 RUN apt-get update -qq && \
-  apt-get install -y -qq gnupg && \
-  sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
-  wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+  apt-get install -y -qq gnupg lsb-release curl ca-certificates && \
+  install -d /usr/share/postgresql-common/pgdg && \
+  curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+  sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
   apt-get update -qq && \
   apt-get install -y -qq postgresql-client-16 && \
   apt-get remove --purge -y -qq gnupg && \
