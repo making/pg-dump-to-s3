@@ -1,7 +1,6 @@
 package lol.maki.batch.tasklet;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +35,7 @@ public class DumpTasklet implements Tasklet {
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		final ExecutionContext context = contribution.getStepExecution().getJobExecution().getExecutionContext();
-		final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
+		final Path tmpDir = Path.of(System.getProperty("java.io.tmpdir"));
 		final String timestamp = LocalDateTime.now(this.clock).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		final Path dump = tmpDir.resolve("%s".formatted(timestamp));
 		final ProcessBuilder processBuilder = new ProcessBuilder("pg_dump", "-U", this.pgDumpProps.username(), "-h",
