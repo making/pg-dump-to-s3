@@ -40,10 +40,11 @@ public class DumpTasklet implements Tasklet {
 		final String timestamp = LocalDateTime.now(this.clock).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		final Path dump = tmpDir.resolve("%s".formatted(timestamp));
 		final List<String> args = new ArrayList<>(List.of("pg_dump", "-U", this.pgDumpProps.username(), "-h",
-				this.pgDumpProps.host(), "-p", String.valueOf(this.pgDumpProps.port()), this.pgDumpProps.database()));
+				this.pgDumpProps.host(), "-p", String.valueOf(this.pgDumpProps.port())));
 		if (!CollectionUtils.isEmpty(this.pgDumpProps.additionalArgs())) {
 			args.addAll(this.pgDumpProps.additionalArgs());
 		}
+		args.add(this.pgDumpProps.database());
 		final ProcessBuilder processBuilder = new ProcessBuilder(args).directory(tmpDir.toFile())
 			.redirectOutput(dump.toFile());
 		final Map<String, String> environment = processBuilder.environment();
