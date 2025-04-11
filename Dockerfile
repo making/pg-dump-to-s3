@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk as builder
+FROM eclipse-temurin:21-jdk as builder
 WORKDIR application
 ADD ./.mvn .mvn/
 ADD ./mvnw mvnw
@@ -6,9 +6,9 @@ ADD ./pom.xml pom.xml
 ADD ./src src/
 RUN ./mvnw -V clean package -DskipTests --no-transfer-progress && \
     cp target/*.jar application.jar && \
-    java -Djarmode=layertools -jar application.jar extract
+    java -Djarmode=tools -jar application.jar extract --layers --launcher --destination extracted
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR application
 RUN apt-get update -qq && \
   apt-get install -y -qq gnupg lsb-release curl ca-certificates && \
@@ -19,8 +19,8 @@ RUN apt-get update -qq && \
   apt-get install -y -qq postgresql-client-16 && \
   apt-get remove --purge -y -qq gnupg && \
   rm -rf /var/lib/apt/lists/*
-COPY --from=builder application/dependencies/ ./
-COPY --from=builder application/spring-boot-loader/ ./
-COPY --from=builder application/snapshot-dependencies/ ./
-COPY --from=builder application/application/ ./
+COPY --from=builder application/extracted/dependencies/ ./
+COPY --from=builder application/extracted/spring-boot-loader/ ./
+COPY --from=builder application/extracted/snapshot-dependencies/ ./
+COPY --from=builder application/extracted/application/ ./
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
