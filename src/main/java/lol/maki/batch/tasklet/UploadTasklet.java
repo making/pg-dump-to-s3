@@ -1,26 +1,23 @@
 package lol.maki.batch.tasklet;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.function.Supplier;
-
 import am.ik.s3.Content;
 import am.ik.s3.ListBucketResult;
 import am.ik.s3.S3Content;
 import am.ik.s3.S3Request;
 import am.ik.s3.S3RequestBuilder;
 import am.ik.s3.S3RequestBuilders;
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.function.Supplier;
 import lol.maki.batch.AwsProps;
 import lol.maki.batch.PgDumpProps;
 import lol.maki.batch.S3Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -28,13 +25,11 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
-import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 @JobScope
@@ -52,15 +47,13 @@ public class UploadTasklet implements Tasklet {
 
 	public UploadTasklet(RestClient.Builder restClientBuilder, AwsProps awsProps, S3Props s3Props,
 			PgDumpProps pgDumpProps) {
-		this.restClient = restClientBuilder.defaultStatusHandler(new DefaultResponseErrorHandler() {
-			@Override
-			protected void handleError(ClientHttpResponse response, HttpStatusCode statusCode) throws IOException {
-				if (statusCode == HttpStatus.NOT_FOUND) {
-					// Accept 404 errors
-					return;
-				}
-				super.handleError(response, statusCode);
+		this.restClient = restClientBuilder.defaultStatusHandler(status -> {
+			if (status == HttpStatus.NOT_FOUND) {
+				return false;
 			}
+			return status.isError();
+		}, (req, res) -> {
+			throw new ResponseStatusException(res.getStatusCode(), res.getStatusText());
 		}).build();
 		this.s3Props = s3Props;
 		this.pgDumpProps = pgDumpProps;
